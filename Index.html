@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HENG TOP - Official Store</title>
+    
+    <!-- Tailwind CSS & Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Load Kantumruy Pro (Khmer) and Teko (Display/Headers) -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700;800&family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'ml-bg': '#090a10', 'ml-card': '#161823', 'ml-blue': '#287aff', 'ml-gold': '#ffac33', 'success': '#00c853', 'pending': '#ff9100' },
+                    // Kantumruy Pro for main text (sans) and Teko for display headers
+                    fontFamily: { sans: ['Kantumruy Pro', 'system-ui', 'sans-serif'], display: ['Teko', 'sans-serif'] },
+                    boxShadow: { 'glow': '0 0 20px rgba(40, 122, 255, 0.4)', 'gold-glow': '0 0 20px rgba(255, 172, 51, 0.3)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #090a10; color: #e5e7eb; -webkit-tap-highlight-color: transparent; }
+        .bg-premium { background-image: radial-gradient(circle at 10% 20%, rgba(40, 122, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 172, 51, 0.05) 0%, transparent 40%); }
+        .glass-card { background: rgba(22, 24, 35, 0.9); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        
+        /* Premium Input Styling (Simplified Look) */
+        input { 
+            background: #0f111a !important; 
+            border: 1px solid #2a2d3d !important; 
+            color: white !important; 
+            border-radius: 0.75rem !important; 
+            padding: 12px 16px; 
+            transition: all 0.3s ease;
+        }
+        input:focus { 
+            border-color: #287aff !important; 
+            box-shadow: 0 0 10px rgba(40, 122, 255, 0.4) !important; /* Stronger glow on focus */
+        }
+        
+        /* Placeholder styling */
+        input::placeholder {
+            color: #d1d5db; 
+            font-weight: 700; 
+            opacity: 0.8; 
+        }
+
+
+        .smile-card { background: #1c1f2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; transition: all 0.2s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+        .smile-card.selected { background: #1c3a6e; border-color: #287aff; box-shadow: 0 0 15px rgba(40, 122, 255, 0.3); }
+
+        .admin-table th { text-align: left; padding: 10px; font-size: 10px; color: #6b7280; text-transform: uppercase; }
+        .admin-table td { padding: 12px 10px; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .modern-badge { position: absolute; top: 0; right: 0; padding: 2px 8px; border-bottom-left-radius: 8px; font-size: 9px; font-weight: bold; z-index: 2; }
+        .tag-hot { background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); color: white; }
+        .tag-best { background: linear-gradient(135deg, #FDC830 0%, #F37335 100%); color: black; }
+        
+        .modal-enter { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Custom Loader Spinner */
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-top: 4px solid #287aff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen bg-premium font-sans pb-32">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 bg-[#090a10]/95 backdrop-blur-xl border-b border-white/5 h-16">
+        <div class="container mx-auto px-4 h-full flex items-center justify-between max-w-md">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 flex items-center justify-center bg-blue-600/20 rounded-xl border border-blue-500/30">
+                    <i class="fa-solid fa-gem text-ml-blue text-lg drop-shadow-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-2xl leading-none tracking-wide text-white">HENG<span class="text-ml-blue">TOP</span></h1>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">PREMIUM RESELLER</p>
+                </div>
+            </div>
+            <!-- Admin Toggle (Hidden) -->
+            <button id="adminToggle" onclick="checkAdmin()" class="hidden px-3 py-1 bg-red-500/10 border border-red-500/50 rounded-full text-[10px] text-red-400 font-bold animate-pulse">
+                ADMIN PANEL
+            </button>
+        </div>
+    </nav>
+
+    <!-- Welcome Modal for Free Spin -->
+    <div id="welcomeModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="w-full max-w-sm glass-card rounded-2xl overflow-hidden shadow-2xl modal-enter p-6 text-center border-ml-blue/30">
+            <i class="fa-solid fa-gift text-ml-gold text-4xl mb-3 animate-bounce"></i>
+            <h3 class="text-xl font-bold text-white mb-2">🎁 កាដូសម្រាប់សមាជិកថ្មី!</h3>
+            <p class="text-sm text-gray-400 mb-6">ចុចប៊ូតុងខាងក្រោមដើម្បីចាប់យក Free Diamond ឬ Discount 10% ភ្លាមៗ!</p>
+            <button onclick="hideWelcomeModal()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-8 py-3 rounded-xl font-bold text-sm uppercase shadow-glow transition active:scale-95 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> ចាប់រង្វាន់ FREE SPIN
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content (Customer View) -->
+    <main id="customerView" class="relative z-10 container mx-auto px-4 max-w-md space-y-5 pt-20">
+        
+        <!-- Custom Banner Area -->
+        <div class="relative w-full h-48 rounded-2xl overflow-hidden shadow-2xl group border border-ml-blue/50" style="box-shadow: 0 0 25px rgba(40, 122, 255, 0.4);">
+            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=2070" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-700" alt="">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#090a10] via-transparent to-transparent z-10"></div>
+            
+            <!-- Logo Watermark -->
+            <div class="absolute top-2 left-3 z-10 opacity-30">
+                <p class="font-display text-white text-5xl font-bold leading-none">HENG<span class="text-ml-blue">TOP</span></p>
+            </div>
+            
+            <div class="absolute bottom-4 left-4 z-20">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="bg-ml-blue text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg border border-white/20">OFFICIAL</span>
+                    <span class="bg-ml-gold text-black text-[10px] font-bold px-2 py-0.5 rounded shadow-lg border border-black/20">PREMIUM SERVICE</span>
+                </div>
+                <h2 class="font-display font-bold text-4xl text-white drop-shadow-md tracking-wider">MOBILE LEGENDS</h2>
+            </div>
+        </div>
+
+        <!-- Active Reward Display -->
+        <section id="rewardStatus" class="glass-card rounded-2xl p-4 hidden border border-green-500/50 shadow-green-400/20">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-circle-check text-green-500 text-xl"></i>
+                <div>
+                    <h3 class="text-sm font-bold text-white">🎁 កាដូសកម្ម (REWARD ACTIVE)</h3>
+                    <p class="text-xs text-green-400" id="activeRewardText"></p>
+                </div>
+                <button onclick="clearReward()" class="ml-auto text-gray-500 hover:text-red-400 text-sm"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        </section>
+
+        <!-- Account Input (Simplified Codashop Look) -->
+        <section class="glass-card rounded-2xl p-5">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fa-solid fa-user-shield text-ml-blue text-2xl"></i>
+                <h3 class="text-base font-extrabold text-white uppercase tracking-wider">ព័ត៌មានគណនី (ACCOUNT DETAILS)</h3>
+            </div>
+            
+            <!-- Simplified Input Row -->
+            <div class="grid grid-cols-3 gap-3">
+                <!-- User ID -->
+                <div class="col-span-2">
+                    <input type="number" id="userId" placeholder="User ID" 
+                           class="w-full text-base font-extrabold font-mono placeholder-gray-300 outline-none">
+                </div>
+                
+                <!-- Zone ID -->
+                <div class="col-span-1">
+                    <input type="number" id="zoneId" placeholder="Zone" 
+                           class="w-full text-base font-extrabold font-mono placeholder-gray-300 outline-none">
+                </div>
+            </div>
+
+            <!-- Verification Status (Hidden until TOP UP is pressed) -->
+            <div id="accountStatus" class="mt-4 text-sm font-bold hidden"></div>
+
+        </section>
+
+        <!-- Packages (Section 3) -->
+        <section>
+            <div class="flex items-center justify-between mb-4 px-1">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-box-open text-ml-blue text-xl"></i>
+                    <h3 class="text-sm font-extrabold text-gray-300 uppercase tracking-wide">កញ្ចប់ (PACKAGES)</h3>
+                </div>
+                <span class="text-[10px] text-ml-gold font-bold bg-ml-gold/10 px-2 py-1 rounded border border-ml-gold/20">SMILE.ONE RATE</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3" id="packageGrid"></div>
+        </section>
+
+        <!-- Footer spacing -->
+        <div class="h-24"></div>
+    </main>
+
+    <!-- ADMIN DASHBOARD (Hidden) -->
+    <main id="adminView" class="hidden relative z-20 container mx-auto px-4 max-w-md pt-20 pb-32">
+        <div class="glass-card rounded-2xl p-5 mb-4 border border-blue-500/30">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-display font-bold text-white"><i class="fa-solid fa-chart-line mr-2"></i>PROFIT TRACKER</h2>
+                <button onclick="logoutAdmin()" class="text-xs text-gray-400 font-bold hover:text-white"><i class="fa-solid fa-xmark"></i> CLOSE</button>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-[#0f111a] p-3 rounded-xl border border-gray-800">
+                    <p class="text-[10px] text-gray-500 font-bold uppercase">TOTAL SALES</p>
+                    <p class="text-xl font-bold text-white" id="statSales">$0.00</p>
+                </div>
+                <div class="bg-[#0f111a] p-3 rounded-xl border border-gray-800">
+                    <p class="text-[10px] text-gray-500 font-bold uppercase">NET PROFIT</p>
+                    <p class="text-xl font-bold text-green-400" id="statProfit">$0.00</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-xs font-bold text-gray-400 uppercase">RECENT ORDERS</h3>
+                <button onclick="clearAllData()" class="text-[10px] text-red-500 font-bold hover:text-red-400"><i class="fa-solid fa-trash"></i> CLEAR DATA</button>
+            </div>
+            
+            <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+                <table class="w-full admin-table">
+                    <thead>
+                        <tr>
+                            <th>Time/Item</th>
+                            <th>Cost/Price</th>
+                            <th>Profit</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                        <!-- JS will populate -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Sticky Bottom Bar -->
+    <div id="customerBottomBar" class="fixed bottom-0 left-0 w-full bg-[#161823]/95 backdrop-blur-xl border-t border-white/5 p-4 z-40 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.6)]">
+        <div class="container mx-auto max-w-md flex items-center justify-between">
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">TOTAL <span id="totalBonusText" class="text-green-400"></span></p>
+                <p class="text-2xl font-display font-bold text-white leading-none" id="totalPrice">$0.00</p>
+            </div>
+            <button id="topUpBtn" onclick="handleTopUpClick()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-8 py-3 rounded-xl font-bold text-sm uppercase shadow-glow transition active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                TOP UP <i class="fa-solid fa-bolt text-yellow-300"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: PAYMENT KHQR -->
+    <div id="paymentModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+        <div class="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-2xl modal-enter">
+            <div class="bg-[#E21A22] p-3 text-center text-white relative">
+                <h3 class="font-bold text-lg">KHQR PAYMENT</h3>
+                <button onclick="closePaymentModal()" class="absolute top-3 right-3 text-white/80 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 flex flex-col items-center">
+                <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-lg mb-4 w-full text-center">
+                   <p class="font-bold text-black text-lg mb-1">ROM SARY (HENG TOP)</p>
+                   <p class="text-gray-500 text-sm mb-3" id="khqrAmount">$0.00</p>
+                   
+                   <!-- DYNAMIC KHQR CODE IMAGE FROM USER'S PAYLOAD -->
+                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=00020101021129450016abaakhppxxx%40abaa01099767492970208ABA%20Bank40390006abaP2P0112E009C4FCF12C02099767492975204000053038405802KH5908ROM%20SARY6010Phnom%20Penh63049063" class="w-48 h-48 mx-auto border-2 border-black rounded-lg" alt="">
+                </div>
+
+                <p class="text-gray-500 text-xs mb-3 text-center">Scan with ABA Mobile or Click below</p>
+                
+                <!-- ABA DEEP LINK -->
+                <a href="https://pay.ababank.com/oRF8/zvwnushz" target="_blank" class="w-full bg-[#005F7F] hover:bg-[#004d66] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 mb-3 shadow-md transition transform active:scale-95">
+                    <i class="fa-solid fa-mobile-screen"></i> Pay with ABA Mobile
+                </a>
+
+                <button onclick="processOrder()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i> I Have Paid
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TELEGRAM -->
+    <div id="telegramModal" class="fixed inset-0 z-[90] hidden flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
+        <div class="w-full max-w-sm bg-[#161823] border border-white/10 rounded-2xl overflow-hidden shadow-2xl modal-enter">
+            <div class="bg-blue-600 p-4 text-center">
+                <i class="fa-brands fa-telegram text-white text-3xl mb-1"></i>
+                <h3 class="text-white font-bold text-sm tracking-wide">ផ្ញើវិក្កយបត្រ (SEND RECEIPT)</h3>
+            </div>
+            <div class="p-5">
+                <textarea id="telegramMsg" readonly class="w-full h-32 bg-[#090a10] p-3 rounded-xl border border-white/10 text-xs text-gray-300 font-mono mb-4 focus:outline-none resize-none"></textarea>
+                <button onclick="sendTelegram()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-paper-plane"></i> ផ្ញើឥឡូវនេះ (SEND NOW)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] hidden transition-all duration-300 transform scale-95 opacity-0">
+        <div class="bg-[#161823] border border-blue-500/30 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md">
+            <i id="toastIcon" class="fa-solid fa-circle-info text-ml-blue"></i>
+            <span id="toastMsg" class="font-bold text-xs tracking-wide">Notification</span>
+        </div>
+    </div>
+
+    <script>
+        const MY_TELEGRAM_USERNAME = "HengPro_Admin"; 
+        let isAccountVerified = false; 
+
+        // 🚨 START EVENT CONFIGURATION 🚨
+        const EVENT_CONFIG = {
+            isActive: false,       
+            baseBonusPercent: 0,   
+            minDiamondForBonus: 0  
+        };
+        // 🚨 END EVENT CONFIGURATION 🚨
+
+        // PACKAGE DATA (Smile One Rates - with Margin)
+        const packages = [
+            { id: 1, display: "78+8", amount: 86, price: 1.35, cost: 1.05, icon: 'fa-gem' },
+            { id: 2, display: "234+23", amount: 257, price: 3.80, cost: 3.12, icon: 'fa-gem', tag: "HOT", tagType: 'hot' },
+            { id: 3, display: "310+34", amount: 344, price: 4.90, cost: 4.17, icon: 'fa-gem' },
+            { id: 4, display: "465+51", amount: 516, price: 7.20, cost: 6.25, icon: 'fa-gem', tag: "BEST", tagType: 'best' },
+            { id: 5, display: "625+81", amount: 706, price: 9.50, cost: 8.33, icon: 'fa-gem' },
+            { id: 6, display: "1160+186", amount: 1346, price: 17.50, cost: 15.62, icon: 'fa-gem' }, 
+            { id: 7, display: "1547+278", amount: 1825, price: 23.50, cost: 20.83, icon: 'fa-gem' }, 
+            { id: 8, display: "1860+335", amount: 2195, price: 28.00, cost: 25.00, icon: 'fa-gem' },
+            { id: 9, display: "3099+589", amount: 3688, price: 47.00, cost: 41.66, icon: 'fa-gem', tag: "MEGA", tagType: 'best' }, 
+            { id: 10, display: "4649+883", amount: 5532, price: 70.00, cost: 62.50, icon: 'fa-gem', tag: "PRO", tagType: 'hot' }, 
+            { id: 11, display: "7740+1548", amount: 9288, price: 117.00, cost: 104.16, icon: 'fa-gem', tag: "ULTIMATE", tagType: 'best' }, 
+            { id: 12, name: "Weekly Pass", amount: 0, price: 1.48, cost: 1.25, icon: 'fa-ticket', color: 'text-cyan-400', type: 'pass' },
+            { id: 13, name: "Weekly Pass x3", amount: 0, price: 4.40, cost: 3.75, icon: 'fa-ticket', color: 'text-cyan-400', type: 'pass' },
+        ];
+
+        let orders = [];
+        let selectedPackage = null;
+        let activeReward = null; 
+        
+        // List of Valid IDs and their corresponding names for simulation
+        const VALID_ACCOUNTS = {
+            '1427247798': 'HENG TOP Admin',
+            '12345678': 'KhmerPro',
+            '99999999': 'MLBB Master', 
+            '55555555': 'ROM SARY',
+            '44444444': 'Diamond King',
+            '33333333': 'E-Sport Cambodia'
+        };
+
+        // --- LOCAL STORAGE & INIT ---
+        window.onload = () => { 
+            const savedOrders = localStorage.getItem('hengtop_orders');
+            if(savedOrders) {
+                orders = JSON.parse(savedOrders);
+                updateAdminStats();
+            }
+            const savedReward = localStorage.getItem('hengtop_reward');
+            if(savedReward) {
+                activeReward = JSON.parse(savedReward);
+                updateRewardDisplay();
+            } else {
+                document.getElementById('welcomeModal').classList.remove('hidden');
+            }
+            renderPackages(); 
+            // Listeners for enabling TOP UP button
+            document.getElementById('userId').addEventListener('input', checkAdminTrigger);
+            document.getElementById('userId').addEventListener('input', toggleTopUpButton);
+            document.getElementById('zoneId').addEventListener('input', toggleTopUpButton);
+            updateTotalPrice();
+        };
+
+        function saveData() {
+            localStorage.setItem('hengtop_orders', JSON.stringify(orders));
+            updateAdminStats();
+        }
+
+        // --- WELCOME SPIN GAME LOGIC ---
+        function hideWelcomeModal() {
+            document.getElementById('welcomeModal').classList.add('hidden');
+            simulateFreeSpin();
+        }
+
+        function simulateFreeSpin() {
+            const rewards = [
+                { type: 'DM', value: 5, text: 'ពេជ្រ 5 គ្រាប់ FREE' }, 
+                { type: 'DM', value: 10, text: 'ពេជ្រ 10 គ្រាប់ FREE' },
+                { type: 'DISCOUNT', value: 0.10, text: 'បញ្ចុះតម្លៃ 10% លើកដំបូង' },
+            ];
+            
+            const roll = Math.random();
+            let reward;
+            // 50% chance for 5DM, 30% chance for 10DM, 20% chance for Discount
+            if (roll < 0.50) { 
+                reward = rewards[0];
+            } else if (roll < 0.80) { 
+                reward = rewards[1];
+            } else { 
+                reward = rewards[2];
+            }
+
+            activeReward = reward;
+            localStorage.setItem('hengtop_reward', JSON.stringify(activeReward));
+            
+            updateRewardDisplay();
+            showToast(`🎉 អបអរសាទរ! អ្នកបានឈ្នះ ${activeReward.text}`, "fa-trophy", "text-ml-gold");
+            updateTotalPrice();
+        }
+
+        function updateRewardDisplay() {
+            const statusDiv = document.getElementById('rewardStatus');
+            const rewardText = document.getElementById('activeRewardText');
+            
+            if (activeReward) {
+                statusDiv.classList.remove('hidden');
+                if (activeReward.type === 'DM') {
+                    rewardText.innerHTML = `${activeReward.value} ពេជ្រឥតគិតថ្លៃនឹងត្រូវបានបន្ថែម!`;
+                } else if (activeReward.type === 'DISCOUNT') {
+                    rewardText.innerHTML = `ទទួលបាន ${activeReward.value * 100}% បញ្ចុះតម្លៃលើតម្លៃសរុប!`;
+                }
+            } else {
+                statusDiv.classList.add('hidden');
+            }
+        }
+        
+        function clearReward() {
+            activeReward = null;
+            localStorage.removeItem('hengtop_reward');
+            updateRewardDisplay();
+            updateTotalPrice();
+            showToast("កាដូត្រូវបានលុបចោល", "fa-trash", "text-red-400");
+        }
+
+        // --- ACCOUNT CHECK LOGIC (Simplified: Triggered by Input & TOP UP) ---
+        function toggleTopUpButton() {
+            const userId = document.getElementById('userId').value;
+            const zoneId = document.getElementById('zoneId').value;
+            const topUpBtn = document.getElementById('topUpBtn');
+
+            // Reset verification status when input changes
+            isAccountVerified = false;
+            document.getElementById('accountStatus').classList.add('hidden');
+
+            if (userId.length > 5 && zoneId.length > 3 && selectedPackage) {
+                topUpBtn.disabled = false;
+            } else {
+                topUpBtn.disabled = true;
+            }
+        }
+
+        function verifyAccountAndProceed() {
+            const userId = document.getElementById('userId').value;
+            const statusDiv = document.getElementById('accountStatus');
+            
+            // Show loading
+            statusDiv.classList.remove('hidden');
+            statusDiv.innerHTML = `<div class="flex items-center justify-center gap-2 text-ml-blue"><div class="spinner"></div> កំពុងពិនិត្យគណនី...</div>`;
+            
+            document.getElementById('topUpBtn').disabled = true;
+
+            setTimeout(() => {
+                let simulatedName = VALID_ACCOUNTS[userId];
+                let success = !!simulatedName;
+                
+                if (success) {
+                    isAccountVerified = true;
+                    document.getElementById('topUpBtn').disabled = false;
+                    statusDiv.innerHTML = `
+                        <div class="bg-green-600/20 text-green-400 p-3 rounded-lg border border-green-500/30 flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+                            <div>
+                                ** ✅ គណនីត្រឹមត្រូវ! **<br>
+                                ឈ្មោះ: <span class="font-extrabold text-white">${simulatedName}</span>
+                            </div>
+                        </div>
+                    `;
+                    showKhqrModal(); // Proceed to payment after successful verification
+                } else {
+                    isAccountVerified = false;
+                    document.getElementById('topUpBtn').disabled = true;
+
+                    statusDiv.innerHTML = `
+                        <div class="bg-red-600/20 text-red-400 p-3 rounded-lg border border-red-500/30 flex items-center gap-3">
+                            <i class="fa-solid fa-circle-xmark text-xl"></i>
+                            <div>
+                                ** ❌ គណនីមិនត្រឹមត្រូវ! **<br>
+                                សូមពិនិត្យ User ID & Zone ID ឡើងវិញ។
+                            </div>
+                        </div>
+                    `;
+                    showToast("គណនីមិនត្រឹមត្រូវ! សូមពិនិត្យម្ដងទៀត។", "fa-circle-xmark", "text-red-400");
+                }
+            }, 1500);
+        }
+
+        // --- PACKAGE SELECTION AND PRICE CALCULATION ---
+        function calculatePackagePrice(pkg) {
+            let finalPrice = pkg.price;
+            let finalAmount = pkg.amount;
+            let bonusText = '';
+
+            // 1. Apply Event Bonus (Diamond Amount Increase)
+            if (EVENT_CONFIG.isActive && pkg.amount >= EVENT_CONFIG.minDiamondForBonus) {
+                const eventBonus = Math.floor(pkg.amount * EVENT_CONFIG.baseBonusPercent);
+                finalAmount += eventBonus;
+                bonusText += ` (+${eventBonus} DM Event)`;
+            }
+
+            // 2. Apply Welcome Discount (Price Reduction)
+            if (selectedPackage && activeReward && activeReward.type === 'DISCOUNT') {
+                const discountAmount = finalPrice * activeReward.value;
+                finalPrice = finalPrice - discountAmount;
+                bonusText += ` (-${(activeReward.value * 100)}% 🎁)`;
+            }
+            
+            // 3. Apply Free Diamond Reward (Amount Increase)
+            if (selectedPackage && activeReward && activeReward.type === 'DM') {
+                finalAmount += activeReward.value;
+                bonusText += ` (+${activeReward.value} DM 🎁)`;
+            }
+
+            return { finalPrice: finalPrice, finalAmount: finalAmount, bonusText: bonusText };
+        }
+
+        function renderPackages() {
+            const grid = document.getElementById('packageGrid');
+            grid.innerHTML = '';
+            packages.forEach(pkg => {
+                const calculated = calculatePackagePrice(pkg); // Calculate potential bonus
+                
+                const title = pkg.name || `${pkg.display}`;
+                const subTitle = pkg.name ? "Package" : `${pkg.amount} Diamonds`;
+                const iconColor = pkg.color || 'text-ml-blue';
+                
+                let badgeHtml = '';
+                if (pkg.tag) {
+                    let badgeClass = pkg.tagType === 'hot' ? 'tag-hot' : 'tag-best';
+                    badgeHtml = `<div class="modern-badge ${badgeClass}">${pkg.tag}</div>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="smile-card cursor-pointer p-3 group h-28" onclick="selectPackage(this, ${pkg.id})">
+                        ${badgeHtml}
+                        <div class="flex justify-between items-start">
+                             <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                                <i class="fa-solid ${pkg.icon} text-lg ${iconColor}"></i>
+                            </div>
+                            <span class="text-white font-extrabold text-xl leading-none">$${calculated.finalPrice.toFixed(2)}</span>
+                        </div>
+                        <div>
+                            <span class="text-white font-extrabold text-base block">${title}</span>
+                            <span class="text-gray-500 text-[10px] uppercase font-bold tracking-wide">${subTitle}</span>
+                        </div>
+                         ${calculated.finalAmount > pkg.amount ? `<p class="text-[10px] text-green-400 font-extrabold mt-1">Total: ${calculated.finalAmount} DM</p>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        function selectPackage(el, id) {
+            document.querySelectorAll('.smile-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedPackage = packages.find(p => p.id === id);
+            toggleTopUpButton(); // Re-check button status after selecting package
+            updateTotalPrice();
+        }
+
+        function updateTotalPrice() {
+            const priceElement = document.getElementById('totalPrice');
+            const bonusTextElement = document.getElementById('totalBonusText');
+            
+            if (!selectedPackage) {
+                priceElement.innerText = '$0.00';
+                bonusTextElement.innerText = '';
+                return;
+            }
+
+            const calculated = calculatePackagePrice(selectedPackage);
+            
+            priceElement.style.opacity = '0';
+            setTimeout(() => {
+                priceElement.innerText = `$${calculated.finalPrice.toFixed(2)}`;
+                bonusTextElement.innerText = calculated.bonusText;
+                priceElement.style.opacity = '1';
+                priceElement.classList.add('text-ml-blue');
+                setTimeout(() => priceElement.classList.remove('text-ml-blue'), 300);
+            }, 100);
+        }
+
+        function handleTopUpClick() {
+            if(!selectedPackage) { showToast("សូមជ្រើសរើសកញ្ចប់ពេជ្រ", "fa-hand-pointer", "text-red-400"); return; }
+            if(!document.getElementById('userId').value || !document.getElementById('zoneId').value) { showToast("សូមបញ្ចូល User ID និង Zone ID", "fa-user", "text-red-400"); return; }
+            
+            // Trigger verification before payment
+            verifyAccountAndProceed();
+        }
+
+        function showKhqrModal() {
+            const calculatedPrice = calculatePackagePrice(selectedPackage).finalPrice;
+            document.getElementById('khqrAmount').innerText = `$${calculatedPrice.toFixed(2)}`;
+            document.getElementById('paymentModal').classList.remove('hidden');
+        }
+        function closePaymentModal() { document.getElementById('paymentModal').classList.add('hidden'); }
+
+        function processOrder() {
+            closePaymentModal();
+            const uid = document.getElementById('userId').value;
+            const zid = document.getElementById('zoneId').value;
+            const calculated = calculatePackagePrice(selectedPackage);
+            
+            // Create Order
+            const newOrder = {
+                id: Date.now(),
+                date: new Date().toLocaleString(),
+                item: selectedPackage.name || selectedPackage.display,
+                uid: uid,
+                zid: zid,
+                price: calculated.finalPrice,
+                cost: selectedPackage.cost,
+                profit: calculated.finalPrice - selectedPackage.cost,
+                status: 'PENDING',
+                finalDM: calculated.finalAmount,
+                reward: activeReward ? `${activeReward.type}: ${activeReward.value}` : 'None'
+            };
+
+            orders.unshift(newOrder); 
+            saveData();
+            
+            // Clear used discount reward (if applicable)
+            if (activeReward && (activeReward.type === 'DISCOUNT' || activeReward.type === 'DM')) {
+                clearReward();
+            }
+            
+            prepareTelegramMsg(newOrder);
+        }
+
+        function prepareTelegramMsg(order) {
+            const msg = `
+────────────────
+💎 **HENG TOP NEW ORDER** 💎
+────────────────
+📦 **Item:** ${order.item} (${order.finalDM} DM Total)
+💵 **Paid:** $${order.price.toFixed(2)}
+💰 **Profit:** +$${order.profit.toFixed(2)}
+🎁 **Reward Used:** ${order.reward}
+👤 **ID:** ${order.uid} (${order.zid})
+────────────────
+✅ Payment Pending. (Time: ${new Date(order.id).toLocaleTimeString()})`;
+            document.getElementById('telegramMsg').value = msg;
+            document.getElementById('telegramModal').classList.remove('hidden');
+        }
+
+        function sendTelegram() {
+            const txt = document.getElementById('telegramMsg');
+            txt.select(); document.execCommand('copy');
+            showToast("Copied! Opening Telegram...", "fa-paper-plane", "text-green-400");
+            setTimeout(() => { window.open(`https://t.me/${MY_TELEGRAM_USERNAME}`, '_blank'); closeTelegram(); }, 1000);
+        }
+        function closeTelegram() { document.getElementById('telegramModal').classList.add('hidden'); }
+
+        // --- ADMIN SYSTEM ---
+        function checkAdminTrigger() {
+            if(document.getElementById('userId').value === "1427247798") {
+                document.getElementById('adminToggle').classList.remove('hidden');
+            } else {
+                 document.getElementById('adminToggle').classList.add('hidden');
+            }
+        }
+
+        function checkAdmin() {
+            document.getElementById('customerView').classList.add('hidden');
+            document.getElementById('customerBottomBar').classList.add('hidden');
+            document.getElementById('adminView').classList.remove('hidden');
+            renderAdminTable();
+        }
+
+        function logoutAdmin() {
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('customerView').classList.remove('hidden');
+            document.getElementById('customerBottomBar').classList.remove('hidden');
+        }
+
+        function updateAdminStats() {
+            const totalSales = orders.reduce((sum, order) => sum + order.price, 0);
+            const totalProfit = orders.reduce((sum, order) => sum + order.profit, 0);
+            document.getElementById('statSales').innerText = `$${totalSales.toFixed(2)}`;
+            document.getElementById('statProfit').innerText = `+$${totalProfit.toFixed(2)}`;
+            renderAdminTable();
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('orderTableBody');
+            tbody.innerHTML = '';
+            
+            orders.forEach(order => {
+                const actionBtn = order.status === 'PENDING' 
+                    ? `<button onclick="completeOrder(${order.id})" class="text-green-400 hover:text-green-300"><i class="fa-solid fa-check"></i></button> <button onclick="deleteOrder(${order.id})" class="text-red-400 ml-2"><i class="fa-solid fa-trash"></i></button>` 
+                    : `<span class="text-gray-600"><i class="fa-solid fa-check-double"></i></span> <button onclick="deleteOrder(${order.id})" class="text-red-900 ml-2 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>`;
+
+                const timeShort = new Date(order.id).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const statusColor = order.status === 'PENDING' ? 'text-pending' : 'text-success';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="text-[9px] text-gray-500">${timeShort}</div>
+                            <div class="font-bold text-white text-xs">${order.item}</div>
+                            <div class="text-[9px] text-gray-400">${order.uid}</div>
+                        </td>
+                        <td>
+                            <div class="text-[10px] text-gray-400">C: $${order.cost.toFixed(2)}</div>
+                            <div class="text-[10px] text-white">S: $${order.price.toFixed(2)}</div>
+                        </td>
+                        <td><span class="text-green-400 font-bold text-xs">+$${order.profit.toFixed(2)}</span></td>
+                        <td class="text-center text-lg">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.completeOrder = function(id) {
+            const order = orders.find(o => o.id === id);
+            if(order) {
+                order.status = 'SUCCESS';
+                saveData();
+                showToast(`Order Completed`, "fa-check-circle", "text-green-400");
+            }
+        }
+        
+        window.deleteOrder = function(id) {
+            if(confirm("Delete this order?")) {
+                orders = orders.filter(o => o.id !== id);
+                saveData();
+            }
+        }
+
+        window.clearAllData = function() {
+            if(confirm("WARNING: This will delete ALL history and sales data. Are you sure?")) {
+                orders = [];
+                saveData();
+                showToast("All data cleared.", "fa-trash", "text-red-400");
+            }
+        }
+
+        function showToast(msg, icon, colorClass) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').className = `fa-solid ${icon} ${colorClass || 'text-ml-blue'}`;
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.remove('scale-95', 'opacity-0'); toast.classList.add('scale-100', 'opacity-100'); }, 10);
+            setTimeout(() => { toast.classList.remove('scale-100', 'opacity-100'); toast.classList.add('scale-95', 'opacity-0'); setTimeout(() => toast.classList.add('hidden'), 300); }, 2500);
+        }
+    </script>
+</body>
+</html>
